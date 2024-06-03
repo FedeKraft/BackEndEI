@@ -4,8 +4,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const mqtt = require('mqtt');
 const WebSocket = require('ws');
-const https = require('https');
-const fs = require('fs');
+const http = require('http');
 
 require('dotenv').config();
 
@@ -24,7 +23,7 @@ const AlarmStatus = mongoose.model('AlarmStatus', new mongoose.Schema({
   alarm1: Boolean,
   alarm2: Boolean,
   timestamp: { type: Date, default: Date.now }
-}));
+}));a
 
 const Logs = mongoose.model('Logs', new mongoose.Schema({
   message: String,
@@ -93,13 +92,8 @@ app.get('/logs', async (req, res) => {
     }
 });
 
-const sslOptions = {
-  key: fs.readFileSync('path/to/your/private.key'),
-  cert: fs.readFileSync('path/to/your/certificate.crt')
-};
-
-const secureServer = https.createServer(sslOptions, app);
-const wss = new WebSocket.Server({ server: secureServer });
+const server = http.createServer(app);
+const wss = new WebSocket.Server({ server });
 
 wss.on('connection', (ws) => {
   ws.on('message', (message) => {
@@ -125,8 +119,8 @@ function broadcast(data) {
   });
 }
 
-secureServer.listen(port, () => {
-  console.log(`Secure server running on port ${port}`);
+server.listen(port, () => {
+  console.log(`Server running on port ${port}`);
 }).on('error', (error) => {
   console.error('Server failed to start:', error);
 });
