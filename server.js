@@ -23,7 +23,7 @@ const AlarmStatus = mongoose.model('AlarmStatus', new mongoose.Schema({
   alarm1: Boolean,
   alarm2: Boolean,
   timestamp: { type: Date, default: Date.now }
-}));a
+}));
 
 const Logs = mongoose.model('Logs', new mongoose.Schema({
   message: String,
