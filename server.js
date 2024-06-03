@@ -4,7 +4,8 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const mqtt = require('mqtt');
 const WebSocket = require('ws');
-const http = require('http');
+const https = require('https');
+const fs = require('fs');
 
 require('dotenv').config();
 
@@ -92,8 +93,13 @@ app.get('/logs', async (req, res) => {
     }
 });
 
-const server = http.createServer(app);
-const wss = new WebSocket.Server({ server });
+const sslOptions = {
+  key: fs.readFileSync('path/to/your/private.key'),
+  cert: fs.readFileSync('path/to/your/certificate.crt')
+};
+
+const secureServer = https.createServer(sslOptions, app);
+const wss = new WebSocket.Server({ server: secureServer });
 
 wss.on('connection', (ws) => {
   ws.on('message', (message) => {
@@ -119,8 +125,8 @@ function broadcast(data) {
   });
 }
 
-server.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+secureServer.listen(port, () => {
+  console.log(`Secure server running on port ${port}`);
 }).on('error', (error) => {
   console.error('Server failed to start:', error);
 });
