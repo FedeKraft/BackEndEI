@@ -22,8 +22,6 @@ mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
 const AlarmStatus = mongoose.model('AlarmStatus', new mongoose.Schema({
   alarm1: Boolean,
   alarm2: Boolean,
-  laser: Boolean,
-  movement: Boolean,
   timestamp: { type: Date, default: Date.now }
 }));
 
@@ -45,7 +43,7 @@ client.on('connect', () => {
 client.on('message', (topic, message) => {
   const status = JSON.parse(message);
   AlarmStatus.create(status);
-  Logs.create({ message: `Alarm status updated: ${JSON.stringify(status)}`, timestamp: new Date().toLocaleString() });
+  Logs.create({ message: `Alarm status updated: ${JSON.stringify(status)}` });
   broadcast(JSON.stringify({ type: 'status', data: status }));
 });
 
@@ -62,36 +60,36 @@ app.use(bodyParser.json());
 
 app.post('/set_alarm', (req, res) => {
   publishCommand(req.body);
-  Logs.create({ message: `Alarm command sent: ${JSON.stringify(req.body)}`, timestamp: new Date().toLocaleString() });
+  Logs.create({ message: `Alarm command sent: ${JSON.stringify(req.body)}` });
   res.send({ message: 'Command sent', ...req.body });
 });
 
 app.get('/status', async (req, res) => {
-  try {
-    const status = await AlarmStatus.findOne().sort({ _id: -1 });
-    if (status) {
-      res.json(status);
-    } else {
-      res.status(404).json({ message: 'No status found' });
+    try {
+        const status = await AlarmStatus.findOne().sort({ _id: -1 });
+        if (status) {
+            res.json(status);
+        } else {
+            res.status(404).json({ message: 'No status found' });
+        }
+    } catch (err) {
+        console.error('Error fetching status:', err);
+        res.status(500).send('Internal Server Error');
     }
-  } catch (err) {
-    console.error('Error fetching status:', err);
-    res.status(500).send('Internal Server Error');
-  }
 });
 
 app.get('/logs', async (req, res) => {
-  try {
-    const logs = await Logs.find().sort({ timestamp: -1 });
-    if (logs.length > 0) {
-      res.json(logs);
-    } else {
-      res.status(404).json({ message: 'No logs found' });
+    try {
+        const logs = await Logs.find().sort({ timestamp: -1 });
+        if (logs.length > 0) {
+            res.json(logs);
+        } else {
+            res.status(404).json({ message: 'No logs found' });
+        }
+    } catch (err) {
+        console.error('Error fetching logs:', err);
+        res.status(500).send('Internal Server Error');
     }
-  } catch (err) {
-    console.error('Error fetching logs:', err);
-    res.status(500).send('Internal Server Error');
-  }
 });
 
 const server = http.createServer(app);
