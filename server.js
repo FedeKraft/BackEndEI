@@ -45,7 +45,7 @@ client.on('connect', () => {
 client.on('message', (topic, message) => {
   const status = JSON.parse(message);
   AlarmStatus.create(status);
-  Logs.create({ message: `Alarm status updated: ${JSON.stringify(status)}`, timestamp: new Date().toISOString() });
+  logStatusChange(status);
   broadcast(JSON.stringify({ type: 'status', data: status }));
 });
 
@@ -57,12 +57,27 @@ function publishCommand(command) {
   client.publish('device/command', JSON.stringify(command));
 }
 
+function logStatusChange(status) {
+  if (status.alarm1 !== undefined) {
+    Logs.create({ message: `Alarm 1 ${status.alarm1 ? 'activated' : 'deactivated'}`, timestamp: new Date().toISOString() });
+  }
+  if (status.alarm2 !== undefined) {
+    Logs.create({ message: `Alarm 2 ${status.alarm2 ? 'activated' : 'deactivated'}`, timestamp: new Date().toISOString() });
+  }
+  if (status.laser !== undefined) {
+    Logs.create({ message: `Laser sensor ${status.laser ? 'activated' : 'deactivated'}`, timestamp: new Date().toISOString() });
+  }
+  if (status.movement !== undefined) {
+    Logs.create({ message: `Movement sensor ${status.movement ? 'activated' : 'deactivated'}`, timestamp: new Date().toISOString() });
+  }
+}
+
 app.use(cors());
 app.use(bodyParser.json());
 
 app.post('/set_alarm', (req, res) => {
   publishCommand(req.body);
-  Logs.create({ message: `Alarm command sent: ${JSON.stringify(req.body)}`, timestamp: new Date().toISOString() });
+  logStatusChange(req.body);
   res.send({ message: 'Command sent', ...req.body });
 });
 
