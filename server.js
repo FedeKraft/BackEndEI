@@ -10,8 +10,8 @@ require('dotenv').config();
 
 const app = express();
 const port = process.env.PORT || 3001;
-const mongoURI = 'mongodb://54.234.234.184:27017/mydb';
-const mqttURL = 'mqtt://54.234.234.184';
+const mongoURI = 'mongodb://54.87.145.221:27017/mydb';
+const mqttURL = 'mqtt://54.87.145.221';
 
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('MongoDB connected'))
